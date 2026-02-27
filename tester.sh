@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# ==============================================================================
-# PARSING DES ARGUMENTS (FLAGS)
-# ==============================================================================
 LANG_FR=false
 
 while [[ "$#" -gt 0 ]]; do
@@ -18,9 +15,6 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# ==============================================================================
-# DICTIONNAIRE (INTERNATIONALISATION)
-# ==============================================================================
 if [ "$LANG_FR" = true ]; then
     L_BANNER="STRICTSWAP - TESTEUR PUSH_SWAP (PRO & MÉMOIRE)"
     L_BASE_CHECKS="▶ VÉRIFICATIONS DU DÉPÔT ET DE LA NORME"
@@ -43,7 +37,6 @@ if [ "$LANG_FR" = true ]; then
     L_NOT_TESTED="[IGNORÉ]"
     L_NOT_FOUND="[NON TROUVÉ]"
     
-    # Noms des tests d'erreurs
     T_DUP="Doublon classique"
     T_DUP_Z="Doublon vicieux (0 et -0)"
     T_SIGN_OPP="Signes opposés (-42 et +42)"
@@ -76,7 +69,6 @@ else
     L_NOT_TESTED="[SKIPPED]"
     L_NOT_FOUND="[NOT FOUND]"
     
-    # Noms des tests d'erreurs
     T_DUP="Classic duplicate"
     T_DUP_Z="Vicious duplicate (0 and -0)"
     T_SIGN_OPP="Opposite signs (-42 and +42)"
@@ -89,9 +81,6 @@ else
     T_EMPTY="Empty argument"
 fi
 
-# ==============================================================================
-# VARIABLES GLOBALES ET COULEURS
-# ==============================================================================
 PUSH_SWAP="./push_swap"
 ERROR_REPORT=""
 
@@ -123,9 +112,6 @@ printf "${C_BLUE}${C_BOLD}║ %-60s ║${C_RESET}\n" "$(printf "%*s" $(((60+${#L
 echo "${C_BLUE}${C_BOLD}╚══════════════════════════════════════════════════════════════╝${C_RESET}"
 echo ""
 
-# ==============================================================================
-# FONCTIONS UTILITAIRES
-# ==============================================================================
 generate_args() {
     seq -10000 10000 | shuf -n $1 | tr '\n' ' '
 }
@@ -162,9 +148,6 @@ set_perf_ko() {
     if [ "$1" -eq 500 ]; then RES_PERF_500="${C_RED}[KO]${C_RESET}"; fi
 }
 
-# ==============================================================================
-# 1. PRÉ-REQUIS : NORME, README ET MAKEFILE
-# ==============================================================================
 echo "${C_CYAN}${C_BOLD}${L_BASE_CHECKS}${C_RESET}"
 
 printf "  %-32s : " "$L_NORM"
@@ -231,9 +214,6 @@ else
 fi
 echo ""
 
-# ==============================================================================
-# 2. TESTS D'ERREURS & MÉMOIRE SUR ERREUR
-# ==============================================================================
 echo "${C_CYAN}${C_BOLD}${L_ERR_TESTS}${C_RESET}"
 
 test_error_case() {
@@ -295,9 +275,6 @@ test_error_case "$T_MIN" "-2147483649" "Error"
 test_error_case "$T_EMPTY" '""' "None"
 echo ""
 
-# ==============================================================================
-# 3. TESTS DE PERFORMANCES ET TRI (30 itérations)
-# ==============================================================================
 test_performance() {
     local SIZE=$1
     local ITERATIONS=$2
@@ -434,9 +411,6 @@ test_worst_case() {
     echo ""
 }
 
-# ==============================================================================
-# 4. TESTS VALGRIND (5 itérations)
-# ==============================================================================
 test_valgrind() {
     local SIZE=$1
     local ITERATIONS=$2
@@ -462,24 +436,18 @@ test_valgrind() {
     echo ""
 }
 
-# ==============================================================================
-# EXECUTION DES BATCHS
-# ==============================================================================
 ITER_PERF=30
 ITER_MEM=5
 
-# Performances
 test_performance 3 $ITER_PERF
 test_performance 5 $ITER_PERF
 test_performance 100 $ITER_PERF
 test_performance 500 $ITER_PERF
 
-# Pire cas pour 3, 5 et 500
 test_worst_case 3
 test_worst_case 5
 test_worst_case 500
 
-# Valgrind
 if command -v valgrind >/dev/null 2>&1; then
     test_valgrind 3 $ITER_MEM
     test_valgrind 5 $ITER_MEM
@@ -489,9 +457,6 @@ else
     RES_VALGRIND="${C_CYAN}${L_NOT_TESTED}${C_RESET}"
 fi
 
-# ==============================================================================
-# RAPPORT FINAL
-# ==============================================================================
 echo "${C_BLUE}${C_BOLD}══════════════════════════════════════════════════════════════${C_RESET}"
 printf "${C_BLUE}${C_BOLD}║ %-60s ║${C_RESET}\n" "$(printf "%*s" $(((60+${#L_SUMMARY})/2)) "$L_SUMMARY")"
 echo "${C_BLUE}${C_BOLD}══════════════════════════════════════════════════════════════${C_RESET}"
