@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR" || exit 1
+
 LANG_FR=false
 
 while [[ "$#" -gt 0 ]]; do
@@ -199,10 +202,31 @@ else
     RES_MAKEFILE="${C_RED}[KO]${C_RESET}"
 fi
 
-if [ -f "./checker_linux" ]; then CHECKER_CMD="./checker_linux"
-elif [ -f "./checker_Mac" ]; then CHECKER_CMD="./checker_Mac"
-elif [ -f "./checker" ]; then CHECKER_CMD="./checker"
-else CHECKER_CMD="wc -c > /dev/null"
+if [ ! -f "./checker_linux" ]; then
+    echo "checker_linux not found in $(pwd)."
+    read -p "Download official checker_linux from 42 intranet? [y/N] " ans
+    if [[ "$ans" =~ ^[Yy]$ ]]; then
+        wget -q -O checker_linux https://cdn.intra.42.fr/document/document/44152/checker_linux || {
+            echo "failed to download checker_linux" >&2
+        }
+    fi
+fi
+if [ -f "./checker_linux" ] && [ ! -x "./checker_linux" ]; then
+    echo "checker_linux exists but is not executable."
+    read -p "Make it executable? [y/N] " ans
+    if [[ "$ans" =~ ^[Yy]$ ]]; then
+        chmod +x checker_linux 2>/dev/null || echo "chmod failed" >&2
+    fi
+fi
+
+if [ -f "./checker_linux" ]; then
+    CHECKER_CMD="./checker_linux"
+elif [ -f "./checker_Mac" ]; then
+    CHECKER_CMD="./checker_Mac"
+elif [ -f "./checker" ]; then
+    CHECKER_CMD="./checker"
+else
+    CHECKER_CMD="wc -c > /dev/null"
 fi
 
 printf "  %-32s : " "$L_CHECKER"
