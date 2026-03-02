@@ -32,8 +32,6 @@ Simple run (English): ```./tester.sh```
 
 French version: ```./tester.sh -fr```
 
-Advanced Security Check: ```./tester.sh --funcheck```
-
 ## Evaluation Criteria
 
 The tester follows the 42 school requirements:
