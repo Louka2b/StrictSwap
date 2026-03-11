@@ -1,7 +1,7 @@
 # StrictSwap - The Ultimate Push_swap Tester
-
-## Developed by louka2b for the 42 curriculum
 [![ldeplace's 42 stats](https://42cv.dev/api/badge/cmmm23yq10000dgywpv8dqd2n/stats?cursusId=21&coalitionId=48)](https://42cv.dev/ldeplace)
+
+
 StrictSwap is a robust testing script designed to stress-test the push_swap project. It goes beyond simple sorting checks by verifying memory, norm compliance, and repository integrity.
 
 ## Main Features
