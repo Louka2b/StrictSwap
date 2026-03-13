@@ -1,6 +1,8 @@
 #!/bin/bash
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -n "$BASH_VERSION" ] || exec bash "$0" "$@"
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR" || exit 1
 
 LANG_FR=false
@@ -202,15 +204,6 @@ else
     RES_MAKEFILE="${C_RED}[KO]${C_RESET}"
 fi
 
-if [ ! -f "./checker_linux" ]; then
-    echo "checker_linux not found in $(pwd)."
-    read -p "Download official checker_linux from 42 intranet? [y/N] " ans
-    if [[ "$ans" =~ ^[Yy]$ ]]; then
-        wget -q -O checker_linux https://cdn.intra.42.fr/document/document/44152/checker_linux || {
-            echo "failed to download checker_linux" >&2
-        }
-    fi
-fi
 if [ -f "./checker_linux" ] && [ ! -x "./checker_linux" ]; then
     echo "checker_linux exists but is not executable."
     read -p "Make it executable? [y/N] " ans
@@ -275,7 +268,7 @@ test_error_case() {
     local valg_status="${C_CYAN}[N/A]${C_RESET}"
     if command -v valgrind >/dev/null 2>&1; then
         local valg_out=$(eval "valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 $PUSH_SWAP $args 2>&1 >/dev/null")
-        if echo "$valg_out" | grep -qE "definitely lost: [1-9]|indirectly lost: [1-9]|errors: [1-9]"; then
+        if echo "$valg_out" | grep -qE "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]|still reachable: [1-9]|errors: [1-9]"; then
             valg_status="${C_RED}[KO]${C_RESET}"
             add_error "VALGRIND" "$msg" "Leak détecté lors de l'arrêt du programme" "valgrind ./push_swap $args"
             RES_SUBTLE="${C_RED}[KO]${C_RESET}"
@@ -306,7 +299,8 @@ test_performance() {
     
     echo "${C_CYAN}${C_BOLD}${L_PERF_TESTS} ($SIZE | $ITERATIONS ops)${C_RESET}"
     
-    for ((i=1; i<=ITERATIONS; i++)); do
+    i=1
+    while [ "$i" -le "$ITERATIONS" ]; do
         ARG=$(generate_args "$SIZE")
         
         N=$(./push_swap $ARG | wc -l | tr -d ' ')
@@ -358,6 +352,7 @@ test_performance() {
         fi
 
         SUM_LINES=$((SUM_LINES + N))
+        i=$((i + 1))
     done
 
     AVG_LINES=$((SUM_LINES / ITERATIONS))
@@ -442,13 +437,14 @@ test_valgrind() {
 
     echo "${C_MAGENTA}${C_BOLD}${L_VALG_TESTS} ($SIZE | $ITERATIONS ops)${C_RESET}"
     
-    for ((i=1; i<=ITERATIONS; i++)); do
+    i=1
+    while [ "$i" -le "$ITERATIONS" ]; do
         ARG=$(generate_args "$SIZE")
         
         local valg_out=$(eval "$CMD_PREFIX ./push_swap $ARG 2>&1 >/dev/null")
 
         LEAK_STATUS="${C_GREEN}[OK]${C_RESET}"
-        if echo "$valg_out" | grep -qE "definitely lost: [1-9]|indirectly lost: [1-9]|errors: [1-9]"; then
+        if echo "$valg_out" | grep -qE "definitely lost: [1-9]|indirectly lost: [1-9]|possibly lost: [1-9]|still reachable: [1-9]|errors: [1-9]"; then
             LEAK_STATUS="${C_RED}[KO]${C_RESET}"
             printf "  Test [%02d/%02d] | Valgrind: %b ${C_RED}<- KO (Fuite de mémoire)${C_RESET}\n" "$i" "$ITERATIONS" "$LEAK_STATUS"
             add_error "VALGRIND" "Size $SIZE" "Fuite de mémoire Valgrind" "valgrind ./push_swap $ARG"
@@ -456,6 +452,7 @@ test_valgrind() {
         else
             printf "  Test [%02d/%02d] | Valgrind: %b\n" "$i" "$ITERATIONS" "$LEAK_STATUS"
         fi
+        i=$((i + 1))
     done
     echo ""
 }
